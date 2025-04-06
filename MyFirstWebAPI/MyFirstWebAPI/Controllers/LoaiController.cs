@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyFirstWebAPI.Data;
@@ -46,14 +47,16 @@ namespace MyFirstWebAPI.Controllers
                 _context.Loais.Add(loai);
                 _context.SaveChanges();
 
-                return Ok(loai);
+                return StatusCode(StatusCodes.Status201Created,loai);
             }
             catch
             {
                 return BadRequest();
             }
         }
+        // test thử authorize sẽ trả về status gì => 401 Unauthorized
         [HttpPut("{id}")]
+        [Authorize]
         public IActionResult Edit(int id, LoaiVM model)
         {
             try
@@ -61,14 +64,14 @@ namespace MyFirstWebAPI.Controllers
                 Loai loai = _context.Loais.SingleOrDefault(h => h.MaLoai == id);
                 if(loai==null)
                 {
-                    return BadRequest();
+                    return NotFound();
                 }
                 loai.TenLoai = model.TenLoai;
 
                 _context.Loais.Update(loai);
                 _context.SaveChanges();
 
-                return NoContent();
+                return StatusCode(StatusCodes.Status204NoContent);
             }
             catch
             {
@@ -83,13 +86,13 @@ namespace MyFirstWebAPI.Controllers
                 Loai loai = _context.Loais.SingleOrDefault(h => h.MaLoai == id);
                 if (loai == null)
                 {
-                    return BadRequest();
+                    return NotFound();
                 }
 
                 _context.Loais.Remove(loai);
                 _context.SaveChanges();
 
-                return NoContent();
+                return StatusCode(StatusCodes.Status204NoContent);
             }
             catch
             {
