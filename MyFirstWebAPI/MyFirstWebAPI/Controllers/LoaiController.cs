@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyFirstWebAPI.Data;
 using MyFirstWebAPI.Models.ViewModels;
+using MyFirstWebAPI.Services;
 
 namespace MyFirstWebAPI.Controllers
 {
@@ -12,42 +13,42 @@ namespace MyFirstWebAPI.Controllers
     public class LoaiController : ControllerBase
     {
         private readonly MyDbContext _context;
+        private readonly ILoaiRepository _loaiRepository;
 
-        public LoaiController(MyDbContext context)
+        public LoaiController(MyDbContext context, ILoaiRepository loaiRepository)
         {
             _context = context;
+            _loaiRepository = loaiRepository;
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_context.Loais.ToList());
+            return Ok(_loaiRepository.GetAll());
         }
         [HttpGet("{id}")]
         public IActionResult GetLoaiById(int id)
         {
-            Loai loai = _context.Loais.SingleOrDefault(h => h.MaLoai == id);
-
-            if(loai==null)
+            try
             {
-                return NotFound();
-            }    
-
-            return Ok(loai);
+                LoaiVM loai = _loaiRepository.GetById(id);
+                if(loai!=null)
+                {
+                    return Ok(loai);
+                }
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
         [HttpPost]
-        public IActionResult CreateNew(LoaiVM model)
+        public IActionResult CreateNew(LoaiModel model)
         {
             try
             {
-                Loai loai = new Loai()
-                {
-                    TenLoai = model.TenLoai
-                };
-                _context.Loais.Add(loai);
-                _context.SaveChanges();
-
-                return StatusCode(StatusCodes.Status201Created,loai);
+                return StatusCode(StatusCodes.Status201Created,_loaiRepository.CreateNew(model));
             }
             catch
             {
@@ -56,20 +57,12 @@ namespace MyFirstWebAPI.Controllers
         }
         // test thử authorize sẽ trả về status gì => 401 Unauthorized
         [HttpPut("{id}")]
-        [Authorize]
+        //[Authorize]
         public IActionResult Edit(int id, LoaiVM model)
         {
             try
             {
-                Loai loai = _context.Loais.SingleOrDefault(h => h.MaLoai == id);
-                if(loai==null)
-                {
-                    return NotFound();
-                }
-                loai.TenLoai = model.TenLoai;
-
-                _context.Loais.Update(loai);
-                _context.SaveChanges();
+                _loaiRepository.Update(id, model);
 
                 return StatusCode(StatusCodes.Status204NoContent);
             }
@@ -83,14 +76,7 @@ namespace MyFirstWebAPI.Controllers
         {
             try
             {
-                Loai loai = _context.Loais.SingleOrDefault(h => h.MaLoai == id);
-                if (loai == null)
-                {
-                    return NotFound();
-                }
-
-                _context.Loais.Remove(loai);
-                _context.SaveChanges();
+                _loaiRepository.Delete(id);
 
                 return StatusCode(StatusCodes.Status204NoContent);
             }

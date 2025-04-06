@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using MyFirstWebAPI.Data;
 using System.Text;
+using MyFirstWebAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ClockSkew = TimeSpan.Zero
     };
 });
+
+// dang ky DI
+//builder.Services.AddScoped<ILoaiRepository, LoaiRepository>();
+builder.Services.AddScoped<ILoaiRepository, LoaiRepositoryInMemory>();
 
 var app = builder.Build();
 
