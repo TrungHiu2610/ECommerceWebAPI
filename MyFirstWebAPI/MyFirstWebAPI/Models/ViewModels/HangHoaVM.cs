@@ -1,14 +1,13 @@
-﻿namespace MyFirstWebAPI.Models.ViewModels
+﻿using MyFirstWebAPI.Data;
+
+namespace MyFirstWebAPI.Models.ViewModels
 {
     public class HangHoaVM
     {
+        public Guid MaHH { get; set; }
         public string TenHH { get; set; }
         public double DonGia { get; set; }
-        public HangHoaVM() { }
-        public HangHoaVM(string TenHH, double DonGia)
-        {
-            this.TenHH = TenHH;
-            this.DonGia = DonGia;
-        }
+        public string MoTa { get; set; }
+        public string MaLoai { get; set; }
     }
 }

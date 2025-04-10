@@ -12,12 +12,10 @@ namespace MyFirstWebAPI.Controllers
     [ApiController]
     public class LoaiController : ControllerBase
     {
-        private readonly MyDbContext _context;
         private readonly ILoaiRepository _loaiRepository;
 
-        public LoaiController(MyDbContext context, ILoaiRepository loaiRepository)
+        public LoaiController(ILoaiRepository loaiRepository)
         {
-            _context = context;
             _loaiRepository = loaiRepository;
         }
 
@@ -32,15 +30,19 @@ namespace MyFirstWebAPI.Controllers
             try
             {
                 LoaiVM loai = _loaiRepository.GetById(id);
-                if(loai!=null)
+                if (loai != null)
                 {
                     return Ok(loai);
                 }
                 return StatusCode(StatusCodes.Status404NotFound);
             }
-            catch
+            catch (FormatException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return BadRequest(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,ex.Message);
             }
         }
         [HttpPost]
@@ -48,11 +50,19 @@ namespace MyFirstWebAPI.Controllers
         {
             try
             {
-                return StatusCode(StatusCodes.Status201Created,_loaiRepository.CreateNew(model));
+                return StatusCode(StatusCodes.Status201Created, _loaiRepository.CreateNew(model));
             }
-            catch
+            catch(ArgumentNullException ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,ex.Message);
             }
         }
         // test thử authorize sẽ trả về status gì => 401 Unauthorized
@@ -66,9 +76,21 @@ namespace MyFirstWebAPI.Controllers
 
                 return StatusCode(StatusCodes.Status204NoContent);
             }
-            catch
+            catch (ArgumentNullException ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
+            }
+            catch (FormatException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
         [HttpDelete("{id}")]
@@ -80,9 +102,17 @@ namespace MyFirstWebAPI.Controllers
 
                 return StatusCode(StatusCodes.Status204NoContent);
             }
-            catch
+            catch(FormatException ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }

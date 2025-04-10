@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MyFirstWebAPI.Data;
 using System.Text;
 using MyFirstWebAPI.Services;
+using MyFirstWebAPI.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,8 +37,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 
 // dang ky DI
-//builder.Services.AddScoped<ILoaiRepository, LoaiRepository>();
-builder.Services.AddScoped<ILoaiRepository, LoaiRepositoryInMemory>();
+//builder.Services.AddScoped<ILoaiRepository, LoaiRepositoryInMemory>();
+builder.Services.AddScoped<ILoaiRepository, LoaiRepository>();
+builder.Services.AddScoped<IHangHoaRepository, HangHoaRepository>();
+
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 var app = builder.Build();
 

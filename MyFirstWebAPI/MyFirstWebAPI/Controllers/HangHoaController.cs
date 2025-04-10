@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MyFirstWebAPI.Models;
 using MyFirstWebAPI.Models.ViewModels;
+using MyFirstWebAPI.Services;
 
 namespace MyFirstWebAPI.Controllers
 {
@@ -9,73 +10,84 @@ namespace MyFirstWebAPI.Controllers
     [ApiController]
     public class HangHoaController : ControllerBase
     {
-        public static List<HangHoa> hangHoas = new List<HangHoa>() {
-            new HangHoa("Cocacola",10000)
-        };
+        private readonly IHangHoaRepository _hangHoaRepository;
+
+        public HangHoaController(IHangHoaRepository hangHoaRepository)
+        {
+            _hangHoaRepository = hangHoaRepository;
+        }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(string? search, double? from, double? to, string? sortBy, int? page)
         {
-            return Ok(hangHoas);
+            return Ok(_hangHoaRepository.GetAll(search,from,to,sortBy,page));
         }
         [HttpGet("{id}")]
         public IActionResult GetById(string id)
         {
             try
             {
-                HangHoa hh = hangHoas.SingleOrDefault(p => p.MaHH == Guid.Parse(id));
-                if(hh==null)
+                HangHoaVM hh = _hangHoaRepository.GetById(id);
+                if (hh==null)
                 {
                     return NotFound();
                 }
                 return Ok(hh);
             }
-            catch
+            catch (FormatException ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
         [HttpPost]
-        public IActionResult Create(HangHoaVM model)
-        {
-            HangHoa hh = new HangHoa();
-            hh.MaHH = Guid.NewGuid();
-            hh.TenHH = model.TenHH;
-            hh.DonGia = model.DonGia;
-
-            hangHoas.Add(hh);
-            return Ok(new
-            {
-                Successs = true,
-                Data = hh
-            });
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult Edit(string id, HangHoa hhEdit)
+        public IActionResult Create(HangHoaModel model)
         {
             try
             {
-                HangHoa hh = hangHoas.SingleOrDefault(p => p.MaHH == Guid.Parse(id));
-                if (hh == null)
-                {
-                    return NotFound();
-                }
-                if (hhEdit.MaHH.ToString() != id)
-                {
-                    return BadRequest();
-                }
-
-                // cap nhat
-                hh.TenHH = hhEdit.TenHH;
-                hh.DonGia = hhEdit.DonGia;
-
-                return Ok();
+                return StatusCode(StatusCodes.Status201Created, _hangHoaRepository.CreateNew(model));
             }
-            catch
+            catch (ArgumentNullException ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Edit(string id, HangHoaModel hhEdit)
+        {
+            try
+            {
+                _hangHoaRepository.Update(id, hhEdit);
+                return StatusCode(StatusCodes.Status204NoContent);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (FormatException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -84,18 +96,20 @@ namespace MyFirstWebAPI.Controllers
         {
             try
             {
-                HangHoa hh = hangHoas.SingleOrDefault(p => p.MaHH == Guid.Parse(id));
-                if (hh == null)
-                {
-                    return NotFound();
-                }
-
-                hangHoas.Remove(hh);
-                return Ok();
+                _hangHoaRepository.Delete(id);
+                return StatusCode(StatusCodes.Status204NoContent);
             }
-            catch
+            catch (FormatException ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }
