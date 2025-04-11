@@ -18,7 +18,7 @@ namespace MyFirstWebAPI.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll(string? search, double? from, double? to, string? sortBy, int? page)
+        public IActionResult GetAll(string? search, double? from, double? to, string? sortBy, int page = 1)
         {
             return Ok(_hangHoaRepository.GetAll(search,from,to,sortBy,page));
         }

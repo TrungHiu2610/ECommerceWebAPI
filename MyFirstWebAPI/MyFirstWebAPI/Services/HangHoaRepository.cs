@@ -45,10 +45,10 @@ namespace MyFirstWebAPI.Services
 
         public void Delete(string id)
         {
-            if(!Guid.TryParse(id,out Guid _id))
+            if (!Guid.TryParse(id, out Guid _id))
             {
                 throw new FormatException("ID không hợp lệ");
-            }    
+            }
             HangHoa hh = _context.HangHoas.SingleOrDefault(h => h.MaHH == _id);
             if (hh == null)
             {
@@ -58,7 +58,7 @@ namespace MyFirstWebAPI.Services
             _context.SaveChanges();
         }
 
-        public ICollection<HangHoaVM> GetAll(string? search, double? from, double? to, string? sortBy, int? page)
+        public ICollection<HangHoaVM> GetAll(string? search, double? from, double? to, string? sortBy, int page = 1)
         {
             var hangHoas = _context.HangHoas.AsQueryable();
 
@@ -78,9 +78,9 @@ namespace MyFirstWebAPI.Services
             #endregion
 
             #region Sorting
-            if(!string.IsNullOrEmpty(sortBy))
+            if (!string.IsNullOrEmpty(sortBy))
             {
-                switch(sortBy.ToLower())
+                switch (sortBy.ToLower())
                 {
                     case "tenhh_asc":
                         hangHoas = hangHoas.OrderBy(h => h.TenHH);
@@ -95,17 +95,23 @@ namespace MyFirstWebAPI.Services
                         hangHoas = hangHoas.OrderByDescending(h => h.DonGia);
                         break;
                 }
-            }    
-            #endregion
-
-            #region Paging
-            if(page.HasValue)
-            {
-                hangHoas = hangHoas.Skip((int)((page-1) * PAGE_SIZE)).Take(PAGE_SIZE);
             }
             #endregion
 
-            return hangHoas.ProjectTo<HangHoaVM>(_mapper.ConfigurationProvider).ToList();
+            #region Paging
+            // phân trang thủ công
+            //hangHoas = hangHoas.Skip((int)((page - 1) * PAGE_SIZE)).Take(PAGE_SIZE);
+
+            // phân trang bằng PaginatedList<T>
+            // Chuyển IQueryable<HangHoa> thành IQueryable<HangHoaVM> TRƯỚC khi phân trang
+            var hangHoaVMs = hangHoas.ProjectTo<HangHoaVM>(_mapper.ConfigurationProvider);
+
+            // Phân trang
+            var result = PaginatedList<HangHoaVM>.Create(hangHoaVMs, page, PAGE_SIZE);
+
+            #endregion
+
+            return result;
         }
 
         public HangHoaVM GetById(string id)
