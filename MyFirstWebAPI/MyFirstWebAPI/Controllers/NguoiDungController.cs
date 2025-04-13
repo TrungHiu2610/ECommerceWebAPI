@@ -42,7 +42,7 @@ namespace MyFirstWebAPI.Controllers
 
             return Ok(new ApiResponse
             {
-                Success = false,
+                Success = true,
                 Message = "Authenticate success",
                 Data = GenerateToken(user)
             });
@@ -68,7 +68,7 @@ namespace MyFirstWebAPI.Controllers
                     new Claim(ClaimTypes.Email, nguoiDung.Email),
 
                     //role
-                    new Claim("TokenId","Admin") // fix cung admin
+                    new Claim("TokenId", Guid.NewGuid().ToString()) // fix cung admin
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyBites), SecurityAlgorithms.HmacSha256Signature)

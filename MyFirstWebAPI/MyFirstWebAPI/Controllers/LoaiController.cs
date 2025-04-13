@@ -45,6 +45,7 @@ namespace MyFirstWebAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError,ex.Message);
             }
         }
+        [Authorize]
         [HttpPost]
         public IActionResult CreateNew(LoaiModel model)
         {
@@ -60,7 +61,11 @@ namespace MyFirstWebAPI.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch(Exception ex)
+            catch(UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,ex.Message);
             }
