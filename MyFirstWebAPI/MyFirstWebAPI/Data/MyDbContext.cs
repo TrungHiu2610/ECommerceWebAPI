@@ -11,6 +11,7 @@ namespace MyFirstWebAPI.Data
         public DbSet<Loai> Loais { get; set; }
         public DbSet<DonHang> DonHangs { get; set; }
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
+        public DbSet<NguoiDung> NguoiDungs { get; set; }
 
         #endregion
 
@@ -37,6 +38,13 @@ namespace MyFirstWebAPI.Data
                    .WithMany(e => e.ChiTietDonHangs)
                    .HasForeignKey(e => e.MaHH)
                    .HasConstraintName("FK_ChiTietDonHang_HangHoa");
+            });
+
+            modelBuilder.Entity<NguoiDung>(entity =>
+            {
+                entity.ToTable("NguoiDung");
+                entity.HasIndex(e => e.TenDangNhap).IsUnique();
+                entity.Property(e => e.HoTen).IsRequired().HasMaxLength(150);
             });
         }
     }

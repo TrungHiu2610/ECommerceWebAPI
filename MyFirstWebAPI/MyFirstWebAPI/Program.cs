@@ -5,6 +5,7 @@ using MyFirstWebAPI.Data;
 using System.Text;
 using MyFirstWebAPI.Services;
 using MyFirstWebAPI.Helpers;
+using MyFirstWebAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateAudience = false,
 
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:JWTSecretKey"])),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:SecretKey"])),
     
         ClockSkew = TimeSpan.Zero
     };
@@ -41,7 +42,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddScoped<ILoaiRepository, LoaiRepository>();
 builder.Services.AddScoped<IHangHoaRepository, HangHoaRepository>();
 
+// dang ky helpers
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+builder.Services.Configure<AppSettingJWT>(builder.Configuration.GetSection("AppSettings"));
 
 var app = builder.Build();
 
